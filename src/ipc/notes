@@ -1,0 +1,6 @@
+
+check if $HYPRLAND_INSTANCE_SIGNATURE set --> `echo $HYPRLAND_INSTANCE_SIGNATURE`
+socket for hyprland: /tmp/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock
+
+
+
