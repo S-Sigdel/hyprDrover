@@ -23,9 +23,41 @@ pub fn restore_session(snapshot: &SessionSnapshot) -> Result<(), Box<dyn Error>>
 
         } else {
             println!("   ⚠️ Window missing: {}", saved_client.class);
-            // Future: spawn::spawn_process(...)
+            
+            // Notify user
+            let _ = std::process::Command::new("notify-send")
+                .arg("Restoring Session")
+                .arg(format!("Launching {}...", saved_client.class))
+                .spawn();
+
+            // Launch app on workspace
+            // Heuristic: Use initial_class or class, converted to lowercase
+            let raw_name = if !saved_client.initial_class.is_empty() {
+                &saved_client.initial_class
+            } else {
+                &saved_client.class
+            };
+            
+            let command = resolve_command(raw_name);
+
+            println!("      -> Launching: {}", command);
+            let workspace_cmd = format!("exec [workspace {} silent] {}", saved_client.workspace.id, command);
+            
+            if let Err(e) = ipc::dispatch(&workspace_cmd) {
+                eprintln!("Failed to launch {}: {}", command, e);
+            }
         }
     }
 
     Ok(())
+}
+
+fn resolve_command(class: &str) -> String {
+    let lower = class.to_lowercase();
+    match lower.as_str() {
+        "brave-browser" => "brave".to_string(),
+        "code" => "code".to_string(), // VS Code often has class "Code"
+        "google-chrome" => "google-chrome-stable".to_string(),
+        _ => lower,
+    }
 }

@@ -68,6 +68,11 @@ fn main() {
                 Err(e) => eprintln!("Error listing sessions: {}", e),
             }
         }
+        "--install" => {
+            if let Err(e) = install_binary() {
+                eprintln!("Error installing binary: {}", e);
+            }
+        }
         _ => {
             eprintln!("Unknown command: {}", args[1]);
             print_usage();
@@ -76,9 +81,29 @@ fn main() {
 }
 
 fn print_usage() {
-    println!("Usage: hyprDrover [COMMAND]");
+    println!("Usage: hyprdrover [COMMAND]");
     println!("Commands:");
     println!("  --save              Snapshot the current session");
     println!("  --load [FILE]       Restore a session (defaults to latest if FILE not provided)");
     println!("  --list              List all saved sessions");
+    println!("  --install           Install the binary to ~/.local/bin/");
+}
+
+fn install_binary() -> Result<(), Box<dyn std::error::Error>> {
+    let current_exe = env::current_exe()?;
+    let home_dir = env::var("HOME")?;
+    let target_dir = PathBuf::from(home_dir).join(".local/bin");
+    
+    if !target_dir.exists() {
+        std::fs::create_dir_all(&target_dir)?;
+    }
+
+    let target_path = target_dir.join("hyprdrover");
+    
+    std::fs::copy(&current_exe, &target_path)?;
+    
+    println!("Successfully installed to {}", target_path.display());
+    println!("Ensure {} is in your PATH.", target_dir.display());
+    
+    Ok(())
 }
