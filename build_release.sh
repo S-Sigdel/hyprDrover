@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
 
-VERSION="0.1.2"
+VERSION=$(awk -F'"' '/^version\s*=\s*"/ { print $2; exit }' Cargo.toml)
+if [[ -z "$VERSION" ]]; then
+	echo "Failed to detect version from Cargo.toml" >&2
+	exit 1
+fi
 echo "Building hyprdrover v$VERSION..."
 
 # 1. Build for x86_64 (Host)
@@ -20,12 +24,12 @@ mkdir -p artifacts
 
 # Copy and rename x86_64 binary
 # Note: Default cargo build puts it in target/release, not target/x86_64...
-cp target/release/hyprdrover artifacts/hyprdrover-linux-x86_64
-echo "Created artifacts/hyprdrover-linux-x86_64"
+cp target/release/hyprdrover "artifacts/hyprdrover-v$VERSION-linux-x86_64"
+echo "Created artifacts/hyprdrover-v$VERSION-linux-x86_64"
 
 # Copy and rename ARM64 binary
-cp target/aarch64-unknown-linux-gnu/release/hyprdrover artifacts/hyprdrover-linux-aarch64
-echo "Created artifacts/hyprdrover-linux-aarch64"
+cp target/aarch64-unknown-linux-gnu/release/hyprdrover "artifacts/hyprdrover-v$VERSION-linux-aarch64"
+echo "Created artifacts/hyprdrover-v$VERSION-linux-aarch64"
 
-echo "Build complete! Binaries are in target/artifacts/"
+echo "Build complete! Binaries are in artifacts/"
 ls -lh artifacts/
