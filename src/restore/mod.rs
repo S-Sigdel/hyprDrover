@@ -128,7 +128,7 @@ fn resolve_command(class: &str) -> String {
 }
 
 fn launched_window_matches(current: &ipc::HyprClient, saved: &ipc::HyprClient) -> bool {
-    if let (Some(current_path), Some(saved_path)) = (&current.exec_path, &saved.exec_path) {
+    if let (Some(current_path), Some(saved_path)) = (&current.exe_path, &saved.exe_path) {
         if current_path == saved_path {
             return true;
         }
@@ -325,7 +325,7 @@ fn ensure_restored(
         .arg(format!("Launching {}...", saved_client.class))
         .spawn();
 
-    let command = if let Some(path) = &saved_client.exec_path {
+    let command = if let Some(path) = &saved_client.exe_path {
         path.clone()
     } else {
         let raw_name = if !saved_client.initial_class.is_empty() {
